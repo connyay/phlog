@@ -6,7 +6,7 @@ phlog on fly
 
 ```console
 $ go run ./cmd/server
-2021/07/08 19:50:55 listening on http://localhost:8080
+2021/07/08 19:50:55 listening on http://0.0.0.0:8080
 ```
 
 ## Building locally
