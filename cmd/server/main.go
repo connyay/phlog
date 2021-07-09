@@ -12,5 +12,5 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	log.Fatal(server.Listen("localhost:" + port))
+	log.Fatal(server.Listen("0.0.0.0:" + port))
 }
