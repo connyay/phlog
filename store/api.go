@@ -1,10 +1,15 @@
 package store
 
-import "github.com/google/uuid"
+import (
+	"fmt"
+
+	"github.com/google/uuid"
+)
 
 type Store interface {
 	AddPost(Post) error
 	GetPosts(category string) ([]Post, error)
+	GetPostByID(id string) (Post, error)
 }
 
 type Post struct {
@@ -34,4 +39,11 @@ func (m *Mem) GetPosts(category string) ([]Post, error) {
 		posts = append(posts, p)
 	}
 	return posts, nil
+}
+func (m *Mem) GetPostByID(id string) (Post, error) {
+	p, ok := m.posts[id]
+	if !ok {
+		return Post{}, fmt.Errorf("post %q not found", id)
+	}
+	return p, nil
 }
