@@ -1,14 +1,20 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-</head>
-<body>
-<h1>Posts</h1>
-<pre>
-{{range .Posts -}}
-{{.Title}} ({{.ID}})
-<img src="data:{{.ContentType}};base64,{{.Attachment}}"/>
-{{end}}
-</pre>
-</body>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@1.4.2/css/pico.min.css">
+    <title>Posts</title>
+  </head>
+  <body>
+    <main class="container">
+      <h1>Posts</h1>
+        {{range .Posts -}}
+        <article>
+            <header>{{.Title}} <small>({{.ID}})</small></header>
+            <img src="data:{{.ContentType}};base64,{{.Attachment}}"/>
+        </article>
+        {{end}}
+    </main>
+  </body>
 </html>
