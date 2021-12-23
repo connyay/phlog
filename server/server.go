@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/connyay/phlog/store"
 )
 
@@ -15,18 +17,30 @@ var resources embed.FS
 var t = template.Must(template.ParseFS(resources, "templates/*"))
 
 func ListenHTTP(addr string, postStore store.Store) error {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	r := gin.Default()
+	r.SetHTMLTemplate(t)
+	r.GET("/p/:id", func(c *gin.Context) {
+		post, err := postStore.GetPostByID(c.Param("id"))
+		if err != nil {
+			c.Error(err)
+			return
+		}
+		data := map[string]interface{}{
+			"Post": post,
+		}
+		c.HTML(http.StatusOK, "post.html.tmpl", data)
+	})
+	r.GET("/", func(c *gin.Context) {
 		posts, err := postStore.GetPosts("")
 		if err != nil {
-			http.Error(w, "failed getting posts", http.StatusInternalServerError)
+			c.Error(err)
 			return
 		}
 		data := map[string]interface{}{
 			"Posts": posts,
 		}
-		t.ExecuteTemplate(w, "posts.html.tmpl", data)
+		c.HTML(http.StatusOK, "posts.html.tmpl", data)
 	})
-
 	log.Printf("listening on http://%s", addr)
-	return http.ListenAndServe(addr, nil)
+	return r.Run(addr)
 }

@@ -4,17 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@1.4.2/css/pico.min.css">
-    <title>Posts</title>
+    <title>{{.Post.Title}}</title>
   </head>
   <body>
     <main class="container">
-      <h1>Posts</h1>
-        {{range .Posts -}}
-        <article>
-            <header>{{.Title}} <small><a href="/p/{{.ID}}">({{.ID}})</a></small></header>
-            <img src="data:{{.ContentType}};base64,{{.Attachment}}"/>
-        </article>
-        {{end}}
+      <article>
+          <header>{{.Post.Title}} <small>({{.Post.ID}})</small></header>
+          <img src="data:{{.Post.ContentType}};base64,{{.Post.Attachment}}"/>
+      </article>
     </main>
   </body>
 </html>
