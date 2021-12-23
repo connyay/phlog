@@ -5,7 +5,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/connyay/phlog/store"
 )
@@ -17,13 +16,6 @@ var t = template.Must(template.ParseFS(resources, "templates/*"))
 
 func ListenHTTP(addr string, postStore store.Store) error {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		data := map[string]interface{}{
-			"Env": os.Environ(),
-		}
-
-		t.ExecuteTemplate(w, "index.html.tmpl", data)
-	})
-	http.HandleFunc("/posts", func(w http.ResponseWriter, r *http.Request) {
 		posts, err := postStore.GetPosts("")
 		if err != nil {
 			http.Error(w, "failed getting posts", http.StatusInternalServerError)
