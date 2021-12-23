@@ -42,7 +42,7 @@ func main() {
 					post.ContentType = part.Type
 				}
 			}
-			log.Printf("Storing post %#v", post)
+			log.Printf("Storing post title=%q type=%q len=%d", post.Title, post.ContentType, len(post.Attachment))
 			err := postStore.AddPost(post)
 			if err != nil {
 				log.Printf("Failed storing post %v %v", post, err)
