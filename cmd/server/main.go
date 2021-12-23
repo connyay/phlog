@@ -4,7 +4,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/connyay/phlog/pkg/server"
+	"github.com/connyay/phlog/server"
+	"github.com/connyay/phlog/store"
 )
 
 func main() {
@@ -12,5 +13,6 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	log.Fatal(server.Listen("0.0.0.0:" + port))
+	store := &store.Mem{}
+	log.Fatal(server.ListenHTTP("0.0.0.0:"+port, store))
 }

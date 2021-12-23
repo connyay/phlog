@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+</head>
+<body>
+<h1>Posts</h1>
+<pre>
+{{range .Posts -}}
+{{.Title}} ({{.ID}})
+<img src="data:{{.ContentType}};base64,{{.Attachment}}"/>
+{{end}}
+</pre>
+</body>
+</html>
