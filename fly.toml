@@ -1,6 +1,6 @@
-# fly.toml file generated for spring-fog-3363 on 2021-07-08T19:04:12-06:00
+# fly.toml file generated for withered-fog-6310 on 2021-12-23T13:13:47-07:00
 
-app = "spring-fog-3363"
+app = "withered-fog-6310"
 
 kill_signal = "SIGINT"
 kill_timeout = 5
@@ -10,6 +10,8 @@ builder = "paketobuildpacks/builder:base"
 buildpacks = ["gcr.io/paketo-buildpacks/go"]
 
 [env]
+  HTTP_ADDR = ":8080"
+  MAIL_PORT = ":8081"
 
 [experimental]
   allowed_public_ports = []
@@ -33,6 +35,27 @@ buildpacks = ["gcr.io/paketo-buildpacks/go"]
   [[services.ports]]
     handlers = ["tls", "http"]
     port = 443
+
+  [[services.tcp_checks]]
+    grace_period = "1s"
+    interval = "15s"
+    restart_limit = 6
+    timeout = "2s"
+
+[[services]]
+  http_checks = []
+  internal_port = 8081
+  protocol = "tcp"
+  script_checks = []
+
+  [services.concurrency]
+    hard_limit = 25
+    soft_limit = 20
+    type = "connections"
+
+  [[services.ports]]
+    handlers = ["proxy_proto"]
+    port = 25
 
   [[services.tcp_checks]]
     grace_period = "1s"
