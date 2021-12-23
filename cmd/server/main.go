@@ -20,12 +20,28 @@ func main() {
 	if mailAddr == "" {
 		mailAddr = ":8081"
 	}
-	postStore := &store.Mem{}
-	// postStore.AddPost(store.Post{
+	var (
+		postStore store.Store
+		err       error
+	)
+	if dsn := os.Getenv("DATABASE_URL"); dsn != "" {
+		log.Println("Using PG store")
+		postStore, err = store.NewPG(dsn)
+		if err != nil {
+			log.Fatalf("Initializing store %v", err)
+		}
+	} else {
+		log.Println("Using mem store")
+		postStore = &store.Mem{}
+	}
+	// err = postStore.AddPost(store.Post{
 	// 	Title:       "Hello World!",
 	// 	Attachment:  `iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII`,
 	// 	ContentType: "image/png",
 	// })
+	// if err != nil {
+	// 	log.Fatalf("Writing to store store %v", err)
+	// }
 	mailReader := mail.RawDogReader{
 		ListenAddr: mailAddr,
 	}

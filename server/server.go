@@ -14,11 +14,9 @@ import (
 //go:embed templates/*
 var resources embed.FS
 
-var t = template.Must(template.ParseFS(resources, "templates/*"))
-
 func ListenHTTP(addr string, postStore store.Store) error {
 	r := gin.Default()
-	r.SetHTMLTemplate(t)
+	r.SetHTMLTemplate(template.Must(template.ParseFS(resources, "templates/*")))
 	r.GET("/p/:id", func(c *gin.Context) {
 		post, err := postStore.GetPostByID(c.Param("id"))
 		if err != nil {
