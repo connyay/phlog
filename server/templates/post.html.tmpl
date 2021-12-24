@@ -10,7 +10,9 @@
     <main class="container">
       <article>
           <header>{{.Post.Title}} <small>({{.Post.ID}})</small></header>
-          <img src="data:{{.Post.ContentType}};base64,{{.Post.Attachment}}"/>
+          {{range .Post.Blobs -}}
+            <img src="/b/{{.}}"/>
+          {{end}}
       </article>
     </main>
   </body>

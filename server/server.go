@@ -3,7 +3,9 @@ package server
 import (
 	"embed"
 	"html/template"
+	"io"
 	"log"
+	"mime"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -14,13 +16,11 @@ import (
 //go:embed templates/*
 var resources embed.FS
 
-var t = template.Must(template.ParseFS(resources, "templates/*"))
-
-func ListenHTTP(addr string, postStore store.Store) error {
+func ListenHTTP(addr string, storage store.Store) error {
 	r := gin.Default()
-	r.SetHTMLTemplate(t)
+	r.SetHTMLTemplate(template.Must(template.ParseFS(resources, "templates/*")))
 	r.GET("/p/:id", func(c *gin.Context) {
-		post, err := postStore.GetPostByID(c.Param("id"))
+		post, err := storage.GetPostByID(c.Param("id"))
 		if err != nil {
 			c.Error(err)
 			return
@@ -30,8 +30,21 @@ func ListenHTTP(addr string, postStore store.Store) error {
 		}
 		c.HTML(http.StatusOK, "post.html.tmpl", data)
 	})
+	r.GET("/b/:id", func(c *gin.Context) {
+		blob, ext, err := storage.GetBlobByRef(c.Param("id"))
+		if err != nil {
+			c.Error(err)
+			return
+		}
+		c.Header("Content-Type", mime.TypeByExtension(ext))
+		_, err = io.Copy(c.Writer, blob)
+		if err != nil {
+			c.Error(err)
+			return
+		}
+	})
 	r.GET("/", func(c *gin.Context) {
-		posts, err := postStore.GetPosts("")
+		posts, err := storage.GetPosts("")
 		if err != nil {
 			c.Error(err)
 			return
