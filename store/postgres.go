@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"embed"
+	"io"
 	"strconv"
 
 	"github.com/Boostport/migration"
@@ -37,6 +38,13 @@ func NewPG(dsn string) (Store, error) {
 type pgstore struct {
 	dsn  string
 	pool *pgxpool.Pool
+}
+
+func (pg *pgstore) AddBlob(data []byte, ext string) (string, error) {
+	panic("not impl")
+}
+func (pg *pgstore) GetBlobByRef(ref string) (blob io.Reader, ext string, err error) {
+	panic("not impl")
 }
 
 func (pg *pgstore) AddPost(post Post) error {

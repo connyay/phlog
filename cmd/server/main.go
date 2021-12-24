@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/base64"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -21,27 +22,26 @@ func main() {
 		mailAddr = ":8081"
 	}
 	var (
-		postStore store.Store
-		err       error
+		storage store.Store
+		err     error
 	)
 	if dsn := os.Getenv("DATABASE_URL"); dsn != "" {
 		log.Println("Using PG store")
-		postStore, err = store.NewPG(dsn)
+		storage, err = store.NewPG(dsn)
 		if err != nil {
 			log.Fatalf("Initializing store %v", err)
 		}
 	} else {
 		log.Println("Using mem store")
-		postStore = &store.Mem{}
+		storage = &store.Mem{}
 	}
-	// err = postStore.AddPost(store.Post{
-	// 	Title:       "Hello World!",
-	// 	Attachment:  `iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII`,
-	// 	ContentType: "image/png",
-	// })
-	// if err != nil {
-	// 	log.Fatalf("Writing to store store %v", err)
-	// }
+	if _, seed := os.LookupEnv("SEED_DB"); seed {
+		log.Println("Seeding data")
+		if err := seedData(storage); err != nil {
+			log.Fatalf("seeding data %v", err)
+		}
+	}
+
 	mailReader := mail.RawDogReader{
 		ListenAddr: mailAddr,
 	}
@@ -54,16 +54,40 @@ func main() {
 					post.Title = string(part.Body)
 				}
 				if strings.HasPrefix(part.Type, "image/") {
-					post.Attachment = base64.RawStdEncoding.EncodeToString(part.Body)
-					post.ContentType = part.Type
+					ref, err := storage.AddBlob(part.Body, part.Type)
+					if err != nil {
+						// FIXME(cjh): Handle this somehow. Retry?
+						panic(fmt.Errorf("failed storing %q", err))
+					}
+					post.Blobs = append(post.Blobs, ref)
 				}
 			}
-			log.Printf("Storing post title=%q type=%q len=%d", post.Title, post.ContentType, len(post.Attachment))
-			err := postStore.AddPost(post)
+			log.Printf("Storing post title=%q blobs=%q", post.Title, post.Blobs)
+			err := storage.AddPost(post)
 			if err != nil {
+				// FIXME(cjh): Handle this somehow. Retry?
 				log.Printf("Failed storing post %v %v", post, err)
 			}
 		}
 	}()
-	log.Fatal(server.ListenHTTP(httpAddr, postStore))
+	log.Fatal(server.ListenHTTP(httpAddr, storage))
+}
+
+func seedData(storage store.Store) error {
+	blob, err := base64.RawStdEncoding.DecodeString(`iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII`)
+	if err != nil {
+		return err
+	}
+	ref, err := storage.AddBlob(blob, ".png")
+	if err != nil {
+		return err
+	}
+	err = storage.AddPost(store.Post{
+		Title: "Hello World!",
+		Blobs: []string{ref},
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }

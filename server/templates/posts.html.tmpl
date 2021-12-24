@@ -12,7 +12,9 @@
         {{range .Posts -}}
         <article>
             <header>{{.Title}} <small><a href="/p/{{.ID}}">({{.ID}})</a></small></header>
-            <img src="data:{{.ContentType}};base64,{{.Attachment}}"/>
+            {{range .Blobs -}}
+              <img src="/b/{{.}}"/>
+            {{end}}
         </article>
         {{end}}
     </main>
