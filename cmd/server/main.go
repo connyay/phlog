@@ -21,19 +21,10 @@ func main() {
 	if mailAddr == "" {
 		mailAddr = ":8081"
 	}
-	var (
-		storage store.Store
-		err     error
-	)
-	if dsn := os.Getenv("DATABASE_URL"); dsn != "" {
-		log.Println("Using PG store")
-		storage, err = store.NewPG(dsn)
-		if err != nil {
-			log.Fatalf("Initializing store %v", err)
-		}
-	} else {
-		log.Println("Using mem store")
-		storage = &store.Mem{}
+
+	storage, err := store.New()
+	if err != nil {
+		log.Fatalf("Creating store %v", err)
 	}
 	if _, seed := os.LookupEnv("SEED_DB"); seed {
 		log.Println("Seeding data")

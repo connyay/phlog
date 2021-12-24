@@ -43,7 +43,8 @@ type pgstore struct {
 func (pg *pgstore) AddBlob(data []byte, ext string) (string, error) {
 	panic("not impl")
 }
-func (pg *pgstore) GetBlobByRef(ref string) (blob io.Reader, ext string, err error) {
+
+func (pg *pgstore) GetBlobByRef(ref string) (blob io.ReadCloser, ext string, err error) {
 	panic("not impl")
 }
 
@@ -51,11 +52,11 @@ func (pg *pgstore) AddPost(post Post) error {
 	pg.pool.BeginTx(context.Background(), pgx.TxOptions{})
 	_, err := pg.pool.Exec(context.Background(), `
 	INSERT INTO posts (
-		title
+		title, blobs
 	)
-	VALUES ($1)
+	VALUES ($1, $2)
 	`,
-		post.Title,
+		post.Title, post.Blobs,
 	)
 	if err != nil {
 		return err
@@ -66,7 +67,7 @@ func (pg *pgstore) AddPost(post Post) error {
 func (pg *pgstore) GetPosts(category string) (posts []Post, err error) {
 	sql := `
 	SELECT
-		id, title
+		id, title, blobs
 	FROM posts`
 	rows, err := pg.pool.Query(context.Background(), sql)
 	if err != nil {
@@ -78,7 +79,7 @@ func (pg *pgstore) GetPosts(category string) (posts []Post, err error) {
 			id   int
 			post Post
 		)
-		if err := rows.Scan(&id, &post.Title); err != nil {
+		if err := rows.Scan(&id, &post.Title, &post.Blobs); err != nil {
 			return nil, err
 		}
 		post.ID = strconv.Itoa(id)
@@ -90,11 +91,11 @@ func (pg *pgstore) GetPosts(category string) (posts []Post, err error) {
 func (pg *pgstore) GetPostByID(id string) (post Post, err error) {
 	sql := `
 	SELECT
-		id, title
+		id, title, blobs
 	FROM posts where id = $1`
 	row := pg.pool.QueryRow(context.Background(), sql, id)
 	var intID int
-	if err := row.Scan(&intID, &post.Title); err != nil {
+	if err := row.Scan(&intID, &post.Title, &post.Blobs); err != nil {
 		return post, err
 	}
 	post.ID = strconv.Itoa(intID)

@@ -35,3 +35,13 @@ $ docker build -t phlog .
 ```console
 $ fly deploy
 ```
+
+## Deployment with durable storage
+
+```console
+$ fly postgres create
+...
+$ fly postgres attach --postgres-app {PG_APP} -a {APP}
+...
+$ fly secrets set -a {APP} AWS_S3_BUCKET="" AWS_S3_KEY="" AWS_S3_SECRET="" AWS_S3_ENDPOINT="" AWS_S3_REGION=""
+```
